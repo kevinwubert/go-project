@@ -30,8 +30,7 @@ var rootCmd = &cobra.Command{
 	Use:   "go-project",
 	Short: "CLI to initialize a starter golang project",
 	Long: `go-project is a CLI to create a starter golang project.
-		   go-project can also template out phrases to be replaced based
-		   some config file.`,
+go-project can also template out phrases to be replaced based some config file.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
