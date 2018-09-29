@@ -55,6 +55,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 	// so only the binary is needed for the install?
 	// Convert templates to a templates.go?
 	// I think this way is probably the coolest :)
+	// Similar to using packr
 
 	err = templates.Create(templateName, name)
 	if err != nil {
