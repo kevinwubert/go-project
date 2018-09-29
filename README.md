@@ -1,2 +1,2 @@
 # go-project
-CLI for starting a golang project using Cobra
+CLI for starting and bootstrapping a golang project

@@ -1,11 +1,14 @@
 package cmd
 
 import (
-	"fmt"
+	"errors"
 	"io"
 	"os"
 
+	"github.com/kevinwubert/go-project/pkg/templates"
 	"github.com/spf13/cobra"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // initCmd represents the init command
@@ -14,11 +17,12 @@ var initCmd = &cobra.Command{
 	Short: "Initializes a go project",
 	Long:  `Generates the code for a go project into an empty directory following some template.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(cmd.Flag("name").Value)
-		fmt.Println(cmd.Flag("template").Value)
-		fmt.Println("init called")
-
-		fmt.Println(isCurrentDirEmpty())
+		err := runInit(cmd, args)
+		if err != nil {
+			log.Errorf("Error initializing go-project: %v", err)
+			return
+		}
+		log.Infof("Successful go-project")
 	},
 }
 
@@ -30,6 +34,34 @@ func init() {
 	initCmd.MarkFlagRequired("name")
 
 	initCmd.Flags().StringP("template", "t", "", "name of template to be used (defaults to hello-world)")
+}
+
+func runInit(cmd *cobra.Command, args []string) error {
+	isEmpty, err := isCurrentDirEmpty()
+	if err != nil {
+		return err
+	}
+	if !isEmpty {
+		return errors.New("cannot init go-project in non-empty directory")
+	}
+
+	name := cmd.Flag("name").Value.String()
+	templateName := cmd.Flag("template").Value.String()
+
+	log.Infof("%v and %v", name, templateName)
+
+	// Ways to get template?
+	// Make file to run an initial convertTemplates.go to a static go file
+	// so only the binary is needed for the install?
+	// Convert templates to a templates.go?
+	// I think this way is probably the coolest :)
+
+	err = templates.Create(templateName, name)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func isCurrentDirEmpty() (bool, error) {
