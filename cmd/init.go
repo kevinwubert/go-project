@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -15,6 +17,8 @@ var initCmd = &cobra.Command{
 		fmt.Println(cmd.Flag("name").Value)
 		fmt.Println(cmd.Flag("template").Value)
 		fmt.Println("init called")
+
+		fmt.Println(isCurrentDirEmpty())
 	},
 }
 
@@ -26,4 +30,29 @@ func init() {
 	initCmd.MarkFlagRequired("name")
 
 	initCmd.Flags().StringP("template", "t", "", "name of template to be used (defaults to hello-world)")
+}
+
+func isCurrentDirEmpty() (bool, error) {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return false, err
+	}
+	return isDirEmpty(pwd)
+}
+
+// TODO: add viper config to allow ignorable files and
+// then generalize this function
+func isDirEmpty(name string) (bool, error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+
+	_, err = f.Readdirnames(1)
+	if err == io.EOF {
+		return true, nil
+	}
+
+	return false, err
 }
