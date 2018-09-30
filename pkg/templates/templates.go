@@ -1,6 +1,10 @@
 package templates
 
-import "github.com/kevinwubert/go-project/pkg/util"
+import (
+	"errors"
+
+	"github.com/kevinwubert/go-project/pkg/util"
+)
 
 // Recursive struct
 type directory struct {
@@ -19,10 +23,7 @@ type template struct {
 	rootDir directory
 }
 
-// Creator has a create function attached to it
-type Creator interface {
-	Create(path string) error
-}
+type templates map[string]template
 
 func (t template) Generate() error {
 	err := t.rootDir.Create(".")
@@ -63,63 +64,29 @@ func (f file) Create(path string) error {
 	return nil
 }
 
+func (ts templates) ToCodeString() string {
+	return "blah"
+}
+
+func (t template) ToCodeString() string {
+	return "blah"
+}
+
+func (d directory) ToCodeString() string {
+	return "blah"
+}
+
+func (f file) ToCodeString() string {
+	return "blah"
+}
+
 // Create either creates the template based off the template name
 // and templated by name or returns an error if that template does not exist
 func Create(templateName string, name string) error {
-	dir3 := directory{
-		name: "zxcvz",
-		files: []file{
-			file{
-				name: "zxcv.txt",
-				data: []byte("zxcvzxcv\n"),
-			},
-			file{
-				name: "zxcvzxcv.txt",
-				data: []byte("zxcvzxcvzxcvzxcvzxcv\n"),
-			},
-		},
-		dirs: []*directory{},
+	if _, ok := staticTemplates[templateName]; !ok {
+		return errors.New("static template " + templateName + " not found")
 	}
-	dir2 := directory{
-		name: "asdfasdf",
-		files: []file{
-			file{
-				name: "asdfffff.txt",
-				data: []byte("asdfasdfasdfasdf\n"),
-			},
-			file{
-				name: "asdffssssfff.txt",
-				data: []byte("asdfasdfasdfasdf\n"),
-			},
-		},
-		dirs: []*directory{},
-	}
-	dir := directory{
-		name: "test",
-		files: []file{
-			file{
-				name: "test.txt",
-				data: []byte("testing123\n"),
-			},
-		},
-		dirs: []*directory{&dir2},
-	}
-	rdir := directory{
-		name: "",
-		files: []file{
-			file{
-				name: "root.txt",
-				data: []byte("config\n"),
-			},
-			file{
-				name: "empty.txt",
-				data: []byte("config\n"),
-			},
-		},
-		dirs: []*directory{&dir, &dir3},
-	}
-
-	return rdir.Create(".")
+	return staticTemplates[templateName].Generate()
 }
 
 // DefaultTemplatesDir is the default name for the templates dir to be stored
@@ -129,7 +96,7 @@ const DefaultTemplatesDir = "./templates"
 // statictemplates contains a slice of template
 func ProcessTemplatesDir(dir string) error {
 	filename := "./pkg/templates/static_templates.go"
-	templates := make(map[string]template)
+	ts := make(templates)
 
 	// t := template{
 	// 	name: "stuff",
@@ -143,17 +110,13 @@ func ProcessTemplatesDir(dir string) error {
 	if err != nil {
 		return err
 	}
-	templates[t.name] = t
+	ts[t.name] = t
 
-	err = util.CreateFile(filename, []byte("package templates\n"))
+	err = util.CreateFile(filename, []byte(ts.ToCodeString()))
 
 	return err
 }
 
 func buildTemplateFromDir(dir string) (template, error) {
 	return template{}, nil
-}
-
-func FileString(templates map[string]template) string {
-	return "blah"
 }

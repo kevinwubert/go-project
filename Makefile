@@ -2,7 +2,7 @@
 
 all: build
 
-build: build-process-templates run-process-templates build-go-project
+build: build-go-project
 
 build-go-project:
 	go build -o bin/go-project main.go
