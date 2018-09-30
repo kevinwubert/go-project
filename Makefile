@@ -1,8 +1,8 @@
-.PHONY: all build build-go-project build-process-templates install clean
+.PHONY: all build build-go-project build-process-templates run-process-templates fmt install clean
 
 all: build
 
-build: build-go-project
+build: build-process-templates run-process-templates fmt build-go-project
 
 build-go-project:
 	go build -o bin/go-project main.go
@@ -12,6 +12,9 @@ build-process-templates:
 
 run-process-templates:
 	./bin/process-templates
+
+fmt:
+	go fmt
 
 install:
 	go install

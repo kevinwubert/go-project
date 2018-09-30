@@ -67,8 +67,7 @@ func (f file) Create(path string) error {
 func (ts templates) CodeString() string {
 	s := `package templates
 
-var staticTemplates = templates{
-`
+var staticsTemplates = templates{`
 
 	for _, t := range ts {
 		s += t.CodeString()
@@ -80,13 +79,12 @@ var staticTemplates = templates{
 }
 
 func (t template) CodeString() string {
-	s := `"hello-world": template{
-name: "hello-world",
-rootDir:`
+	s := `"` + t.name + `": template{
+name: "` + t.name + `",`
+	// rootDir: `
 
 	s += t.rootDir.CodeString()
-	s += `
-	},`
+	s += `},`
 	return s
 }
 
@@ -114,7 +112,7 @@ const DefaultTemplatesDir = "./templates"
 // statictemplates contains a slice of template
 func ProcessTemplatesDir(dir string) error {
 	filename := "./pkg/templates/static_templates.go"
-	ts := make(templates)
+	// ts := make(templates)
 
 	// t := template{
 	// 	name: "stuff",
@@ -124,13 +122,13 @@ func ProcessTemplatesDir(dir string) error {
 	// 		dirs:  []*directory{},
 	// 	},
 	// }
-	t, err := buildTemplateFromDir(dir)
-	if err != nil {
-		return err
-	}
-	ts[t.name] = t
+	// t, err := buildTemplateFromDir(dir)
+	// if err != nil {
+	// 	return err
+	// }
+	// ts[t.name] = t
 
-	err = util.CreateFile(filename, []byte(ts.CodeString()))
+	err := util.CreateFile(filename, []byte(staticTemplates.CodeString()))
 
 	return err
 }
