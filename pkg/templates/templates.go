@@ -20,7 +20,7 @@ type file struct {
 
 type template struct {
 	name    string
-	rootDir directory
+	rootDir *directory
 }
 
 type templates map[string]template
@@ -64,19 +64,37 @@ func (f file) Create(path string) error {
 	return nil
 }
 
-func (ts templates) ToCodeString() string {
+func (ts templates) CodeString() string {
+	s := `package templates
+
+var staticTemplates = templates{
+`
+
+	for _, t := range ts {
+		s += t.CodeString()
+	}
+
+	s += `}`
+
+	return s
+}
+
+func (t template) CodeString() string {
+	s := `"hello-world": template{
+name: "hello-world",
+rootDir:`
+
+	s += t.rootDir.CodeString()
+	s += `
+	},`
+	return s
+}
+
+func (d directory) CodeString() string {
 	return "blah"
 }
 
-func (t template) ToCodeString() string {
-	return "blah"
-}
-
-func (d directory) ToCodeString() string {
-	return "blah"
-}
-
-func (f file) ToCodeString() string {
+func (f file) CodeString() string {
 	return "blah"
 }
 
@@ -112,7 +130,7 @@ func ProcessTemplatesDir(dir string) error {
 	}
 	ts[t.name] = t
 
-	err = util.CreateFile(filename, []byte(ts.ToCodeString()))
+	err = util.CreateFile(filename, []byte(ts.CodeString()))
 
 	return err
 }

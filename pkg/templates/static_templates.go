@@ -1,9 +1,9 @@
 package templates
 
-var staticTemplates = map[string]template{
+var staticTemplates = templates{
 	"hello-world": template{
 		name: "hello-world",
-		rootDir: directory{
+		rootDir: &directory{
 			name: "",
 			files: []file{
 				file{
