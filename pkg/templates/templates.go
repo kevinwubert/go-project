@@ -21,23 +21,32 @@ type template struct {
 
 // Creator has a create function attached to it
 type Creator interface {
-	Create() error
+	Create(path string) error
 }
 
-func (t template) Create() error {
-	err := t.rootDir.Create()
+func (t template) Generate() error {
+	err := t.rootDir.Create("")
 	return err
 }
 
-func (d directory) Create() error {
+func (d directory) Create(path string) error {
+	currPath := path + "/" + d.name
+
+	if currPath != "/" {
+		err := util.CreateDir(currPath)
+		if err != nil {
+			return err
+		}
+	}
+
 	for _, f := range d.files {
-		err := f.Create()
+		err := f.Create(currPath)
 		if err != nil {
 			return err
 		}
 	}
 	for _, internalDir := range d.dirs {
-		err := internalDir.Create()
+		err := internalDir.Create(currPath)
 		if err != nil {
 			return err
 		}
@@ -45,8 +54,8 @@ func (d directory) Create() error {
 	return nil
 }
 
-func (f file) Create() error {
-	err := util.CreateFile(f.name, f.data)
+func (f file) Create(path string) error {
+	err := util.CreateFile(path+f.name, f.data)
 	if err != nil {
 		return err
 	}
