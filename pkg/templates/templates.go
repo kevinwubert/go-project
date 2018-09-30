@@ -32,7 +32,7 @@ func (t template) Generate() error {
 func (d directory) Create(path string) error {
 	currPath := path + "/" + d.name
 
-	if currPath != "/" {
+	if currPath != "./" {
 		err := util.CreateDir(currPath)
 		if err != nil {
 			return err
@@ -123,9 +123,10 @@ func Create(templateName string, name string) error {
 }
 
 // DefaultTemplatesDir is the default name for the templates dir to be stored
-const DefaultTemplatesDir = "/templates"
+const DefaultTemplatesDir = "./templates"
 
-// ProcessTemplatesDir takes in templates
-func ProcessTemplatesDir(dir string) {
-
+// ProcessTemplatesDir creates a statictemplates.go from the directory dir
+// statictemplates contains a slice of template
+func ProcessTemplatesDir(dir string) error {
+	return nil
 }
