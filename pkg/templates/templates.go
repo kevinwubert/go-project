@@ -55,7 +55,8 @@ func (d directory) Create(path string) error {
 }
 
 func (f file) Create(path string) error {
-	err := util.CreateFile(path+f.name, f.data)
+	filepath := path + "/" + f.name
+	err := util.CreateFile(filepath, f.data)
 	if err != nil {
 		return err
 	}
@@ -65,12 +66,60 @@ func (f file) Create(path string) error {
 // Create either creates the template based off the template name
 // and templated by name or returns an error if that template does not exist
 func Create(templateName string, name string) error {
-	f := file{
-		name: "test.txt",
-		data: []byte("testing123\n"),
+	dir3 := directory{
+		name: "zxcvz",
+		files: []file{
+			file{
+				name: "zxcv.txt",
+				data: []byte("zxcvzxcv\n"),
+			},
+			file{
+				name: "zxcvzxcv.txt",
+				data: []byte("zxcvzxcvzxcvzxcvzxcv\n"),
+			},
+		},
+		dirs: []*directory{},
+	}
+	dir2 := directory{
+		name: "asdfasdf",
+		files: []file{
+			file{
+				name: "asdfffff.txt",
+				data: []byte("asdfasdfasdfasdf\n"),
+			},
+			file{
+				name: "asdffssssfff.txt",
+				data: []byte("asdfasdfasdfasdf\n"),
+			},
+		},
+		dirs: []*directory{},
+	}
+	dir := directory{
+		name: "test",
+		files: []file{
+			file{
+				name: "test.txt",
+				data: []byte("testing123\n"),
+			},
+		},
+		dirs: []*directory{&dir2},
+	}
+	rdir := directory{
+		name: "",
+		files: []file{
+			file{
+				name: "root.txt",
+				data: []byte("config\n"),
+			},
+			file{
+				name: "empty.txt",
+				data: []byte("config\n"),
+			},
+		},
+		dirs: []*directory{&dir, &dir3},
 	}
 
-	return f.Create()
+	return rdir.Create(".")
 }
 
 // DefaultTemplatesDir is the default name for the templates dir to be stored
