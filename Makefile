@@ -14,7 +14,7 @@ run-process-templates:
 	./bin/process-templates
 
 fmt:
-	go fmt
+	goreturns -w pkg/templates/static_templates.go
 
 install:
 	go install

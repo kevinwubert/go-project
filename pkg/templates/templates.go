@@ -2,6 +2,8 @@ package templates
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/kevinwubert/go-project/pkg/util"
 )
@@ -67,33 +69,64 @@ func (f file) Create(path string) error {
 func (ts templates) CodeString() string {
 	s := `package templates
 
-var staticsTemplates = templates{`
+var staticsTemplates = templates{
+`
 
 	for _, t := range ts {
 		s += t.CodeString()
 	}
 
-	s += `}`
+	s += `}
+`
 
 	return s
 }
 
 func (t template) CodeString() string {
 	s := `"` + t.name + `": template{
-name: "` + t.name + `",`
-	// rootDir: `
+name: "` + t.name + `",
+rootDir:
+`
 
 	s += t.rootDir.CodeString()
-	s += `},`
+	s += `},
+`
 	return s
 }
 
 func (d directory) CodeString() string {
-	return "blah"
+	s := `&directory{
+name:  "` + d.name + `",
+files: []file{
+`
+	for _, f := range d.files {
+		s += f.CodeString()
+	}
+
+	s += `
+},
+dirs:  []*directory{
+`
+	for _, internalDir := range d.dirs {
+		s += internalDir.CodeString()
+	}
+
+	s += `
+},
+},
+`
+	return s
 }
 
 func (f file) CodeString() string {
-	return "blah"
+	bytesStr := fmt.Sprintf("%v", f.data)
+	bytesStr = strings.Replace(bytesStr, " ", ", ", -1)
+
+	s := `file{
+name: "` + f.name + `",
+data: []byte{` + bytesStr[1:len(bytesStr)-1] + `},
+},`
+	return s
 }
 
 // Create either creates the template based off the template name
