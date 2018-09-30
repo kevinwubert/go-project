@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	err := templates.ProcessTemplatesDir("asdf")
+	err := templates.ProcessTemplatesDir("./templates")
 	if err != nil {
 		fmt.Printf("Error in generating static templates: %v\n", err)
 	}

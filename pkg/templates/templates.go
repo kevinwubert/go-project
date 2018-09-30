@@ -3,6 +3,9 @@ package templates
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/kevinwubert/go-project/pkg/util"
@@ -145,27 +148,82 @@ const DefaultTemplatesDir = "./templates"
 // statictemplates contains a slice of template
 func ProcessTemplatesDir(dir string) error {
 	filename := "./pkg/templates/static_templates.go"
-	// ts := make(templates)
+	ts := make(templates)
 
-	// t := template{
-	// 	name: "stuff",
-	// 	rootDir: directory{
-	// 		name:  "thing",
-	// 		files: []file{},
-	// 		dirs:  []*directory{},
-	// 	},
-	// }
-	// t, err := buildTemplateFromDir(dir)
-	// if err != nil {
-	// 	return err
-	// }
-	// ts[t.name] = t
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return err
+	}
 
-	err := util.CreateFile(filename, []byte(staticTemplates.CodeString()))
+	for _, f := range files {
+		if f.IsDir() {
+			t, err := buildTemplateFromDir(dir+"/"+f.Name(), f.Name())
+			if err != nil {
+				return err
+			}
+			ts[f.Name()] = t
+		}
+	}
 
+	err = util.CreateFile(filename, []byte(ts.CodeString()))
 	return err
 }
 
-func buildTemplateFromDir(dir string) (template, error) {
-	return template{}, nil
+func buildTemplateFromDir(path string, name string) (template, error) {
+	rootDir, err := buildDirFromDir(path, "")
+	if err != nil {
+		return template{}, nil
+	}
+
+	t := template{
+		name:    name,
+		rootDir: rootDir,
+	}
+
+	return t, nil
+}
+
+func buildDirFromDir(dirpath string, name string) (*directory, error) {
+	ds := []*directory{}
+	fs := []file{}
+	err := filepath.Walk(dirpath, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			d, err := buildDirFromDir(path, info.Name())
+			if err != nil {
+				return err
+			}
+			ds = append(ds, d)
+		} else {
+			f, err := buildFileFromFile(path, info.Name())
+			if err != nil {
+				return err
+			}
+			fs = append(fs, f)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	dir := &directory{
+		name:  name,
+		files: fs,
+		dirs:  ds,
+	}
+
+	return dir, nil
+}
+
+func buildFileFromFile(path string, name string) (file, error) {
+	input, err := ioutil.ReadFile(path)
+	if err != nil {
+		return file{}, err
+	}
+	f := file{
+		name: name,
+		data: input,
+	}
+	return f, nil
 }
