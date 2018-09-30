@@ -128,5 +128,8 @@ const DefaultTemplatesDir = "./templates"
 // ProcessTemplatesDir creates a statictemplates.go from the directory dir
 // statictemplates contains a slice of template
 func ProcessTemplatesDir(dir string) error {
-	return nil
+	filename := "./pkg/templates/static_templates.go"
+	err := util.CreateFile(filename, []byte("package templates\n"))
+
+	return err
 }
