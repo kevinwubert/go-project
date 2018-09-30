@@ -25,7 +25,7 @@ type Creator interface {
 }
 
 func (t template) Generate() error {
-	err := t.rootDir.Create("")
+	err := t.rootDir.Create(".")
 	return err
 }
 
@@ -129,7 +129,31 @@ const DefaultTemplatesDir = "./templates"
 // statictemplates contains a slice of template
 func ProcessTemplatesDir(dir string) error {
 	filename := "./pkg/templates/static_templates.go"
-	err := util.CreateFile(filename, []byte("package templates\n"))
+	templates := make(map[string]template)
+
+	// t := template{
+	// 	name: "stuff",
+	// 	rootDir: directory{
+	// 		name:  "thing",
+	// 		files: []file{},
+	// 		dirs:  []*directory{},
+	// 	},
+	// }
+	t, err := buildTemplateFromDir(dir)
+	if err != nil {
+		return err
+	}
+	templates[t.name] = t
+
+	err = util.CreateFile(filename, []byte("package templates\n"))
 
 	return err
+}
+
+func buildTemplateFromDir(dir string) (template, error) {
+	return template{}, nil
+}
+
+func FileString(templates map[string]template) string {
+	return "blah"
 }
