@@ -4,14 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/kevinwubert/go-project/pkg/util"
 )
-
-var staticTemplates = templates{}
 
 // Recursive struct
 type directory struct {
@@ -190,31 +186,26 @@ func buildTemplateFromDir(path string, name string) (template, error) {
 func buildDirFromDir(dirpath string, name string) (*directory, error) {
 	ds := []*directory{}
 	fs := []file{}
-	isRoot := true
 
-	err := filepath.Walk(dirpath, func(path string, info os.FileInfo, err error) error {
-		if !isRoot {
-			if info.IsDir() {
-				d, err := buildDirFromDir(path, info.Name())
-				if err != nil {
-					return err
-				}
-				ds = append(ds, d)
-			} else {
-				f, err := buildFileFromFile(path, info.Name())
-				if err != nil {
-					return err
-				}
-				fs = append(fs, f)
-			}
-		} else {
-			isRoot = false
-		}
-		return nil
-	})
-
+	files, err := ioutil.ReadDir(dirpath)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			d, err := buildDirFromDir(dirpath+"/"+file.Name(), file.Name())
+			if err != nil {
+				return nil, err
+			}
+			ds = append(ds, d)
+		} else {
+			f, err := buildFileFromFile(dirpath+"/"+file.Name(), file.Name())
+			if err != nil {
+				return nil, err
+			}
+			fs = append(fs, f)
+		}
 	}
 
 	dir := &directory{
@@ -227,7 +218,6 @@ func buildDirFromDir(dirpath string, name string) (*directory, error) {
 }
 
 func buildFileFromFile(path string, name string) (file, error) {
-	fmt.Println(path)
 	input, err := ioutil.ReadFile(path)
 	if err != nil {
 		return file{}, err
