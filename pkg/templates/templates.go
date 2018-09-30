@@ -11,6 +11,8 @@ import (
 	"github.com/kevinwubert/go-project/pkg/util"
 )
 
+var staticTemplates = templates{}
+
 // Recursive struct
 type directory struct {
 	name  string
@@ -51,6 +53,7 @@ func (d directory) Create(path string) error {
 			return err
 		}
 	}
+
 	for _, internalDir := range d.dirs {
 		err := internalDir.Create(currPath)
 		if err != nil {
@@ -72,11 +75,12 @@ func (f file) Create(path string) error {
 func (ts templates) CodeString() string {
 	s := `package templates
 
-var staticsTemplates = templates{
+var staticTemplates = templates{
 `
-
-	for _, t := range ts {
-		s += t.CodeString()
+	if ts != nil {
+		for _, t := range ts {
+			s += t.CodeString()
+		}
 	}
 
 	s += `}
@@ -186,19 +190,25 @@ func buildTemplateFromDir(path string, name string) (template, error) {
 func buildDirFromDir(dirpath string, name string) (*directory, error) {
 	ds := []*directory{}
 	fs := []file{}
+	isRoot := true
+
 	err := filepath.Walk(dirpath, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			d, err := buildDirFromDir(path, info.Name())
-			if err != nil {
-				return err
+		if !isRoot {
+			if info.IsDir() {
+				d, err := buildDirFromDir(path, info.Name())
+				if err != nil {
+					return err
+				}
+				ds = append(ds, d)
+			} else {
+				f, err := buildFileFromFile(path, info.Name())
+				if err != nil {
+					return err
+				}
+				fs = append(fs, f)
 			}
-			ds = append(ds, d)
 		} else {
-			f, err := buildFileFromFile(path, info.Name())
-			if err != nil {
-				return err
-			}
-			fs = append(fs, f)
+			isRoot = false
 		}
 		return nil
 	})
@@ -217,6 +227,7 @@ func buildDirFromDir(dirpath string, name string) (*directory, error) {
 }
 
 func buildFileFromFile(path string, name string) (file, error) {
+	fmt.Println(path)
 	input, err := ioutil.ReadFile(path)
 	if err != nil {
 		return file{}, err
