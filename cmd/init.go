@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"errors"
 	"io"
+	"io/ioutil"
 	"os"
 
 	"github.com/kevinwubert/go-project/pkg/templates"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	log "github.com/sirupsen/logrus"
@@ -37,12 +38,17 @@ func init() {
 }
 
 func runInit(cmd *cobra.Command, args []string) error {
-	isEmpty, err := isCurrentDirEmpty()
+	// isEmpty, err := isCurrentDirEmpty()
+	// if err != nil {
+	// 	return err
+	// }
+	// if !isEmpty {
+	// 	return errors.New("cannot init go-project in non-empty directory")
+	// }
+
+	err := isCurrentDirValid()
 	if err != nil {
-		return err
-	}
-	if !isEmpty {
-		return errors.New("cannot init go-project in non-empty directory")
+		return errors.Wrap(err, "cannot init go-project with invalid dir")
 	}
 
 	name := cmd.Flag("name").Value.String()
@@ -88,4 +94,41 @@ func isDirEmpty(name string) (bool, error) {
 	}
 
 	return false, err
+}
+
+func isCurrentDirValid() error {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return errors.Wrap(err, "could not get working directory")
+	}
+	return isDirValid(pwd)
+}
+
+func isDirValid(name string) error {
+	files, err := ioutil.ReadDir(name)
+	if err != nil {
+		return errors.Wrap(err, "could not read directory")
+	}
+
+	for _, file := range files {
+		if !shouldIgnoreFile(file) {
+			return errors.New("working directory has unignorable files")
+		}
+	}
+
+	return nil
+}
+
+func shouldIgnoreFile(file os.FileInfo) bool {
+	ignoreFiles := []string{".gitignore", ".git", "LICENSE", "README.md"}
+	return inStringArr(file.Name(), ignoreFiles)
+}
+
+func inStringArr(val string, arr []string) bool {
+	for _, v := range arr {
+		if val == v {
+			return true
+		}
+	}
+	return false
 }
